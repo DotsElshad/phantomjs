@@ -483,6 +483,7 @@ private slots:
 private:
     QImage renderImage();
     bool renderPdf(const QString &fileName);
+    bool renderToPrinter(const QString &printerName, const QString& documentName);
     void applySettings(const QVariantMap &defaultSettings);
     QString userAgent() const;
 

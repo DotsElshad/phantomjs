@@ -44,6 +44,7 @@
 #include <QNetworkRequest>
 #include <QPainter>
 #include <QPrinter>
+#include <QPrinterInfo>
 #include <QWebHistory>
 #include <QWebHistoryItem>
 #include <QWebElement>
@@ -886,6 +887,9 @@ bool WebPage::render(const QString &fileName, const QVariantMap &option)
     else if (fileName.endsWith(".gif", Qt::CaseInsensitive) ){
         format = "gif";
     }
+    else if (fileName.startsWith("print", Qt::CaseInsensitive)){
+        format = "print";
+    }
 
     if( option.contains("quality") ){
         quality = option.value("quality").toInt();
@@ -894,6 +898,11 @@ bool WebPage::render(const QString &fileName, const QVariantMap &option)
     bool retval = true;
     if ( format == "pdf" ){
         retval = renderPdf(outFileName);
+    }
+    else if ( format == "print" ) {
+        QString printerName = option.value("printerName").toString();
+        QString documentName = option.value("documentName").toString();
+        retval = renderToPrinter(printerName, documentName);
     }
     else if ( format == "gif" ) {
         QImage rawPageRendering = renderImage();
@@ -1163,6 +1172,21 @@ bool WebPage::renderPdf(const QString &fileName)
 
     m_mainFrame->print(&printer, this);
     return true;
+}
+
+bool WebPage::renderToPrinter(const QString &printerName, const QString& documentName)
+{
+    QPrinter printer;
+    printer.setPrinterName(printerName);
+    if (!printer.isValid()) {
+        fprintf(stderr, "Could not find printer ""%s""", printerName.toLocal8Bit().data());
+        return false;
+    }
+
+    printer.setDocName(documentName);
+
+    m_mainFrame->print(&printer, this);
+    return false;
 }
 
 void WebPage::setZoomFactor(qreal zoom)
